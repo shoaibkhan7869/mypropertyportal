@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NS Property Dealer - Super Admin Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ================= BASE PORTAL STYLES (LOCKED PATTERN) ================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f0f0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* === Login & Signup === */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a3c5a 0%, #0d1e2d 100%); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: 0.5s; overflow-y: auto; padding: 20px;}
+        .auth-box { background: white; padding: 40px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; margin: auto; }
+        .login-ceo-pic { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #bfa068; margin: 0 auto 15px auto; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .auth-box h2 { color: #1a3c5a; margin-bottom: 10px; font-size: 22px; }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; outline: none; font-size: 14px; text-align: center; }
+        .auth-btn { width: 100%; background-color: #bfa068; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; margin-bottom: 10px;}
+        .auth-btn:hover { background-color: #9c7c4b; }
+        .switch-link { color: #1a3c5a; font-size: 13px; cursor: pointer; font-weight: bold; text-decoration: underline; }
+        #auth-msg { font-size: 13px; margin-bottom: 15px; display: none; font-weight: bold; }
+
+        /* === Main Layout === */
+        #main-app { display: none; width: 100%; height: 100%; flex-direction: row; } 
+        
+        /* Mobile Header (Hamburger) */
+        .mobile-header { display: none; background: #1a3c5a; color: white; padding: 15px 20px; justify-content: space-between; align-items: center; z-index: 100; }
+        .mobile-header h2 { font-size: 18px; margin: 0; color: #bfa068; }
+        .menu-btn { font-size: 24px; cursor: pointer; }
+
+        .sidebar { width: 260px; background: white; border-right: 1px solid #e0e0e0; padding: 20px 0; z-index: 999; display: flex; flex-direction: column; overflow-y: auto; transition: 0.3s ease; }
+        .logo-container { text-align: center; margin-bottom: 30px; padding: 0 20px; }
+        .logo-text { font-size: 32px; font-weight: bold; color: #1a3c5a; letter-spacing: -2px; line-height: 1; }
+        .logo-sub { font-size: 11px; color: #a58349; font-weight: bold; }
+        .nav-item { padding: 12px 20px; color: #555; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; font-size: 14px; }
+        .nav-item:hover { color: #a58349; background-color: #fafafa; }
+        .nav-item.active { background-color: #f8f1e6; border-radius: 0 25px 25px 0; margin-right: 20px; color: #000; font-weight: bold; border-left: 4px solid #a58349; }
+        
+        .main-content { flex: 1; padding: 25px; background-color: #f7f6f4; overflow-y: auto; position: relative; display: flex; flex-direction: column; width: 100%; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .header h1 { font-size: 20px; color: #222; }
+        .user-profile { display: flex; align-items: center; gap: 12px; font-weight: bold; color: #1a3c5a; }
+        .top-profile-pic { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #bfa068; }
+
+        .content-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Tables & Buttons */
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .btn-primary { background-color: #bfa068; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+        .btn-primary:hover { background-color: #9c7c4b; }
+        .btn-success { background-color: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        
+        .table-container { background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; padding: 15px; margin-bottom: 20px; width: 100%; -webkit-overflow-scrolling: touch;}
+        table { width: 100%; border-collapse: collapse; min-width: max-content; }
+        table, th, td { border: 1px solid #eee; } 
+        th { text-align: left; padding: 12px 10px; background-color: #fcfbf9; color: #444; font-size: 13px; white-space: nowrap; }
+        td { padding: 10px 10px; font-size: 13px; }
+        td[contenteditable="true"]:focus { background-color: #fffdf5; outline: 2px solid #bfa068; }
+        
+        .badge { background-color: #f8f1e6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5d4b5; font-size: 12px; white-space: nowrap; }
+        .badge.investor { background: #e3f2fd; color: #0d47a1; border-color: #bbdefb; }
+        .badge.rental { background: #f3e5f5; color: #4a148c; border-color: #e1bee7; }
+        .badge.buysell { background: #e8f5e9; color: #1b5e20; border-color: #c8e6c9; }
+        .badge.prop-land { background: #e8f5e9; color: #2e7d32; border-color: #c8e6c9; }
+        .badge.prop-plot { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
+        .badge.prop-company { background: #e3f2fd; color: #1565c0; border-color: #bbdefb; }
+
+        .status-badge { color: white; padding: 4px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; user-select: none; display: inline-block; white-space: nowrap; }
+        .status-active { background-color: #28a745; } .status-inactive { background-color: #6c757d; } .status-pending { background-color: #ffc107; color: #000; }
+        .actions i { margin: 0 5px; cursor: pointer; color: #666; } .actions i:hover { color: #dc3545; }
+        .doc-badge { cursor: pointer; user-select: none; transition: 0.2s; display: inline-block; margin: 2px; text-align: center; font-weight: bold; border-radius: 4px; padding: 3px 5px; font-size: 11px; white-space: nowrap;}
+        .doc-pending { background: #ffeeba; color: #856404; border: 1px solid #ffeeba; opacity: 0.6; pointer-events: none;}
+        .doc-active { background: #ffeeba; color: #856404; border: 1px solid #ffeeba; }
+        .doc-done { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        /* Panels & Forms */
+        .admin-panel { background: white; padding: 25px; border-radius: 10px; border-top: 4px solid #1a3c5a; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; width: 100%; overflow-x: auto;}
+        .form-group { display: flex; flex-direction: column; margin-bottom:12px;}
+        .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; outline: none; font-size: 13px;}
+
+        /* Custom Modals */
+        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; padding: 10px;}
+        .modal-box { background: white; padding: 25px; border-radius: 10px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto;}
+        .modal-close { position: absolute; right: 15px; top: 15px; cursor: pointer; font-size: 20px; color: #666; }
+
+        /* KYC */
+        .kyc-upload-area { border: 1px dashed #ccc; padding: 15px; text-align: center; border-radius: 6px; margin-bottom: 10px; background: #f9f9f9;}
+        .kyc-preview { max-width: 100%; max-height: 100px; display: none; margin-top: 10px; border: 1px solid #ddd; object-fit: contain;}
+
+        /* Contact & WhatsApp Cards */
+        .wa-card { background: #e8f5e9; border-left: 4px solid #25D366; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .wa-btn { background: #25D366; color: white; padding: 10px 20px; border: none; border-radius: 30px; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); }
+        .contact-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .contact-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 4px solid #bfa068; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #333; }
+        .contact-card.whatsapp { border-left-color: #25D366; } .contact-card.phone { border-left-color: #1a3c5a; }
+        .contact-card.youtube { border-left-color: #FF0000; } .contact-card.instagram { border-left-color: #E1306C; } 
+        .contact-card.facebook { border-left-color: #1877F2; } .contact-card.maps { border-left-color: #4285F4; }
+        .contact-card i { font-size: 24px; }
+        .contact-card.whatsapp i { color: #25D366; } .contact-card.phone i { color: #1a3c5a; }
+        .contact-card.youtube i { color: #FF0000; } .contact-card.instagram i { color: #E1306C; } 
+        .contact-card.facebook i { color: #1877F2; } .contact-card.maps i { color: #4285F4; }
+        .contact-details h3 { font-size: 14px; margin-bottom: 2px; color: #1a3c5a; }
+        .contact-details p { font-size: 12px; color: #666; word-break: break-all;}
+        
+        /* Calc & Profile */
+        .profile-setup-box { background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px dashed #ccc; text-align: center; max-width: 400px; margin-bottom: 20px; }
+        .profile-setup-box img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .calc-box { background: #fdfbf7; padding: 20px; border-radius: 8px; border: 1px solid #e5d4b5; }
+        .calc-input-group { margin-bottom: 10px; }
+        .calc-input-group label { display: block; font-size: 12px; font-weight: bold; color: #1a3c5a; margin-bottom: 4px; }
+        .calc-input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; outline: none; font-size: 14px; font-weight: bold; color: #333; }
+        .calc-result-box { background: #1a3c5a; color: white; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .calc-result-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.2); }
+        .calc-result-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .calc-result-item p { font-size: 11px; color: #bfa068; margin-bottom: 3px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;}
+        .calc-result-item h3 { font-size: 20px; margin: 0; }
+
+        /* ================= MOBILE RESPONSIVE QUERIES ================= */
+        @media (max-width: 768px) {
+            #main-app { flex-direction: column; }
+            .mobile-header { display: flex; }
+            .sidebar { position: fixed; left: -280px; top: 60px; height: calc(100vh - 60px); width: 260px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+            .sidebar.open { left: 0; }
+            .header { display: none; }
+            .main-content { padding: 15px; height: calc(100vh - 60px); }
+            .admin-panel, .table-container { padding: 15px; }
+            .auth-box { padding: 25px 20px; }
+        }
+
+        /* ================= CERTIFICATE & ID CARD (Print Logic) ================= */
+        :root{ --navy:#12213F; --gold:#C79A45; --cream:#FBF8F2; --ink:#1B2333; --gray:#8A93A6; }
+        .cert-stage{ display:flex; justify-content:center; align-items: flex-start; padding-top: 20px; overflow-x: auto;}
+        .cert-wrap{ width:11.69in; height:8.27in; transform:scale(0.5); transform-origin:top center; margin-bottom:-4in; }
+        @media (min-width: 768px) { .cert-wrap{ transform:scale(0.65); margin-bottom:-2.5in; } }
+        .cert{ width:11.69in; height:8.27in; background:var(--cream); position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.28); overflow:hidden; font-family:'Inter',sans-serif; }
+        .cert .border-outer{ position:absolute; inset:0.28in; border:2px solid var(--gold); }
+        .cert .border-inner{ position:absolute; inset:0.36in; border:1px solid var(--gold); }
+        .cert .corner{ position:absolute; width:0.55in; height:0.55in; border:2px solid var(--navy); }
+        .cert .corner.tl{ top:0.36in; left:0.36in; border-right:none; border-bottom:none; }
+        .cert .corner.tr{ top:0.36in; right:0.36in; border-left:none; border-bottom:none; }
+        .cert .corner.bl{ bottom:0.36in; left:0.36in; border-right:none; border-top:none; }
+        .cert .corner.br{ bottom:0.36in; right:0.36in; border-left:none; border-top:none; }
+        .cert .skyline-wm{ position:absolute; left:50%; top:50%; width:5.2in; transform:translate(-50%,-46%); opacity:0.045; z-index:0; }
+        .cert-content{ position:relative; z-index:2; height:100%; display:flex; flex-direction:column; align-items:center; padding:0.62in 1.1in 0.5in; text-align:center; }
+        .cert-logo{ height:0.85in; object-fit:contain; cursor:pointer; }
+        .cert-eyebrow{ margin-top:0.16in; font-size:10.5px; letter-spacing:3px; color:var(--gold); font-weight:700; text-transform:uppercase; outline:none; }
+        .cert-title{ font-family:'Playfair Display',serif; font-weight:800; font-size:34px; color:var(--navy); margin-top:0.14in; letter-spacing:1px; outline:none; }
+        .cert-rule{ width:1.4in; height:2px; background:linear-gradient(90deg, transparent, var(--gold), transparent); margin:0.16in auto 0.22in; }
+        .cert-lead{ font-size:13.5px; color:var(--ink); outline:none; }
+        .cert-name{ font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; font-size:44px; color:var(--navy); margin:0.14in 0 0.02in; outline:none; min-width:4in; }
+        .cert-name-rule{ width:3.4in; height:1px; background:var(--gray); opacity:0.5; margin-bottom:0.2in; }
+        .cert-body{ font-size:13.5px; color:var(--ink); line-height:1.85; max-width:6.6in; outline:none; }
+        .cert-role{ color:var(--gold); font-weight:700; letter-spacing:0.5px; outline:none; }
+        .cert-meta{ display:flex; gap:0.55in; margin-top:0.3in; font-size:11px; }
+        .cert-meta .lbl{ color:var(--gray); text-transform:uppercase; letter-spacing:0.8px; font-size:9px; margin-bottom:2px; }
+        .cert-meta .val{ font-weight:700; color:var(--navy); outline:none; }
+        .cert-footer{ margin-top:auto; width:100%; display:flex; justify-content:space-between; align-items:flex-end; padding-top:0.35in; }
+        .sign-block{ text-align:center; width:2.3in; }
+        .sign-line{ border-bottom:1px solid var(--navy); height:0.45in; margin-bottom:0.06in; }
+        .sign-label{ font-size:10px; letter-spacing:0.8px; text-transform:uppercase; color:var(--gray); outline:none; }
+        .sign-name{ font-size:11.5px; font-weight:700; color:var(--navy); margin-top:2px; outline:none; }
+        .seal{ width:1in; height:1in; border-radius:50%; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0; cursor:pointer;}
+        .seal::before{ content:''; position:absolute; inset:6px; border:1px dashed var(--gold); border-radius:50%; }
+        .seal img{ width:0.55in; object-fit:contain; }
+        [contenteditable="true"]:hover{ background:rgba(199,154,69,0.15); border-radius:2px; }
+
+        .id-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 20px; overflow-x: auto;}
+        .id-card { width: 320px; height: 500px; background: #ffffff; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #ddd; flex-shrink: 0;}
+        .id-card-header { background: linear-gradient(135deg, #0b1d3a 0%, #1a365d 100%); height: 120px; position: relative; text-align: center; padding-top: 10px; border-bottom: 4px solid #d4af37; }
+        .id-logo-container { width: 90px; height: 90px; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10; }
+        .id-logo-container img { width: 100%; height: auto; }
+        .id-photo-container { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #d4af37; position: absolute; top: 75px; left: 50%; transform: translateX(-50%); background: #fff; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .id-photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .id-card-body { padding: 55px 15px 10px 15px; text-align: center; flex-grow: 1; }
+        .id-card-body h3 { margin: 5px 0 2px 0; color: #0b1d3a; font-size: 18px; text-transform: uppercase; }
+        .id-card-body .designation-title { color: #b8860b; font-size: 10px; font-weight: bold; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
+        .id-details-table { width: 100%; text-align: left; font-size: 11px; margin-top: 5px; border-collapse: collapse; }
+        .id-details-table td { padding: 4px 2px; color: #333; border: none; }
+        .id-details-table td.label { font-weight: bold; color: #0b1d3a; width: 45%; }
+        .id-card-footer-front { background: linear-gradient(135deg, #1a365d 0%, #0b1d3a 100%); padding: 6px; text-align: center; color: #d4af37; font-size: 9px; letter-spacing: 1px; border-top: 2px solid #d4af37; }
+        .id-card-footer-front .sign { font-family: 'Brush Script MT', cursive; font-size: 16px; color: #fff; margin-bottom: 2px; }
+
+        @media print {
+            body { background: white !important; }
+            .mobile-header, .sidebar, .header, .controls, .admin-panel, .custom-modal { display: none !important; }
+            .main-content { padding: 0 !important; overflow: visible !important; display: block; height: auto;}
+            .content-section { display: none !important; }
+            .content-section.active { display: block !important; }
+            #cert-tab.active .cert-wrap { transform: scale(1) !important; margin: 0 !important; position: absolute; left: 0; top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- === TEAM BUILDING MODAL === -->
+    <div id="team-modal" class="custom-modal">
+        <div class="modal-box">
+            <i class="fas fa-times modal-close" onclick="document.getElementById('team-modal').style.display='none'"></i>
+            <h2 style="color:#1a3c5a; margin-bottom:15px;"><i class="fas fa-user-plus"></i> Add Team Member</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Create ID for a new Property Consultant. Requires Admin Approval to activate ID Card.</p>
+            <div class="form-group"><label>Full Name</label><input type="text" id="tm-name" placeholder="e.g. Ramesh"></div>
+            <div class="form-group"><label>Mobile Number</label><input type="text" id="tm-mobile" placeholder="e.g. 9876543210"></div>
+            <div class="form-group"><label>Email ID (Optional)</label><input type="email" id="tm-email" placeholder="ramesh@email.com"></div>
+            <div class="form-group"><label>Set Login Password</label><input type="text" id="tm-pass" placeholder="Create a password"></div>
+            <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="saveTeamMember()"><i class="fas fa-save"></i> Register Consultant</button>
+        </div>
+    </div>
+
+    <!-- === CUSTOMER ADD MODAL === -->
+    <div id="customer-modal" class="custom-modal">
+        <div class="modal-box">
+            <i class="fas fa-times modal-close" onclick="document.getElementById('customer-modal').style.display='none'"></i>
+            <h2 style="color:#1a3c5a; margin-bottom:15px;"><i class="fas fa-user-tie"></i> Add New Customer</h2>
+            <div class="form-group"><label>Customer Name</label><input type="text" id="cust-name"></div>
+            <div class="form-group"><label>Mobile Number</label><input type="text" id="cust-mobile"></div>
+            <div class="form-group">
+                <label>Customer Category</label>
+                <select id="cust-type"><option value="Investor">Investor</option><option value="Rental">Rental Property</option><option value="Buy/Sell">Buy & Sell Property</option></select>
+            </div>
+            <div class="form-group"><label>Requirement / Details</label><textarea id="cust-details" rows="3" placeholder="e.g. Looking for a 2BHK flat..."></textarea></div>
+            <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="saveCustomer()"><i class="fas fa-save"></i> Save Customer</button>
+        </div>
+    </div>
+
+    <!-- === PROPERTY INVENTORY MODAL === -->
+    <div id="property-modal" class="custom-modal">
+        <div class="modal-box">
+            <i class="fas fa-times modal-close" onclick="document.getElementById('property-modal').style.display='none'"></i>
+            <h2 style="color:#1a3c5a; margin-bottom:15px;"><i class="fas fa-home"></i> Add Property to Inventory</h2>
+            <div class="form-group">
+                <label>Property Category</label>
+                <select id="prop-type">
+                    <option value="Land/Zameen">Land / Zameen</option>
+                    <option value="Plot">Plot</option>
+                    <option value="House/Villa">House / Villa</option>
+                    <option value="Commercial">Commercial / Shop</option>
+                    <option value="Rental">Rental Property</option>
+                    <option value="Company Owned">Company Owned Property</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Location / Address</label><input type="text" id="prop-location" placeholder="e.g. Warsi Colony, Idgah Road"></div>
+            <div style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:1;"><label>Size / Area</label><input type="text" id="prop-area" placeholder="e.g. 1500 SqFt"></div>
+                <div class="form-group" style="flex:1;"><label>Demand / Price (₹)</label><input type="text" id="prop-price" placeholder="e.g. 25,00000"></div>
+            </div>
+            <div class="form-group"><label>Party/Owner Details & Contact</label><input type="text" id="prop-party" placeholder="Name & Contact of Seller"></div>
+            <div class="form-group"><label>Other Details / Description</label><textarea id="prop-details" rows="2" placeholder="Facing, Amenities, etc."></textarea></div>
+            <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="saveProperty()"><i class="fas fa-save"></i> List Property</button>
+        </div>
+    </div>
+
+    <!-- === KYC MODAL === -->
+    <div id="kyc-modal" class="custom-modal">
+        <div class="modal-box">
+            <i class="fas fa-times modal-close" onclick="document.getElementById('kyc-modal').style.display='none'"></i>
+            <h2 style="color:#1a3c5a; margin-bottom:15px; font-size: 18px;"><i class="fas fa-file-alt"></i> Upload KYC Documents</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">These files remain in the database securely.</p>
+            <input type="hidden" id="kyc-member-index">
+            <div class="kyc-upload-area">
+                <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:5px;">Govt ID Card (Front/Back)</label>
+                <input type="file" id="kyc-aadhaar-file" accept="image/*" onchange="previewKYC(event, 'kyc-aadhaar-preview')">
+                <br><img id="kyc-aadhaar-preview" class="kyc-preview">
+            </div>
+            <div class="kyc-upload-area">
+                <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:5px;">PAN Card</label>
+                <input type="file" id="kyc-pan-file" accept="image/*" onchange="previewKYC(event, 'kyc-pan-preview')">
+                <br><img id="kyc-pan-preview" class="kyc-preview">
+            </div>
+            <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="saveKYC()"><i class="fas fa-save"></i> Save KYC</button>
+        </div>
+    </div>
+
+    <!-- === AUTHENTICATION OVERLAY === -->
+    <div id="login-overlay">
+        <div class="auth-box" id="login-box">
+            <img id="login-ceo-img" class="login-ceo-pic" src="https://via.placeholder.com/100?text=CEO">
+            <h2><i class="fas fa-lock"></i> Portal Login</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 20px;">Enter your Email or NSPD ID to login.</p>
+            <p id="auth-msg"></p>
+            <input type="text" id="login-email" class="auth-input" placeholder="Login ID (Email or NSPD ID)">
+            <input type="password" id="login-password" class="auth-input" placeholder="Password">
+            <button class="auth-btn" onclick="processLogin()">Login</button>
+            <p class="switch-link" style="margin-top: 15px;" onclick="document.getElementById('login-box').style.display='none'; document.getElementById('signup-box').style.display='block';">New User? Request Account</p>
+        </div>
+
+        <div class="auth-box" id="signup-box" style="display: none;">
+            <img id="signup-ceo-img" class="login-ceo-pic" src="https://via.placeholder.com/100?text=CEO">
+            <h2><i class="fas fa-user-plus"></i> Registration</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Your account will need Admin approval.</p>
+            <input type="text" id="signup-name" class="auth-input" placeholder="Full Name">
+            <input type="text" id="signup-phone" class="auth-input" placeholder="Mobile Number">
+            <input type="email" id="signup-email" class="auth-input" placeholder="Email ID">
+            <input type="password" id="signup-password" class="auth-input" placeholder="Create Password">
+            <button class="auth-btn" style="background-color: #1a3c5a;" onclick="processSignup()">Send Request</button>
+            <p class="switch-link" onclick="document.getElementById('signup-box').style.display='none'; document.getElementById('login-box').style.display='block';">Already registered? Login</p>
+        </div>
+    </div>
+
+    <!-- === MOBILE HEADER === -->
+    <div class="mobile-header">
+        <h2>NS PROPERTY DEALER</h2>
+        <i class="fas fa-bars menu-btn" onclick="toggleSidebar()"></i>
+    </div>
+
+    <!-- === MAIN APP === -->
+    <div id="main-app">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo-container" style="display:none;" id="desktop-logo">
+                <div class="logo-text">NS</div><div class="logo-sub">PROPERTY DEALER</div>
+            </div>
+            
+            <div class="nav-item active" onclick="switchTab('database-tab', this)"><i class="fas fa-users-cog"></i> Staff & Team</div>
+            <div class="nav-item" onclick="switchTab('customer-tab', this)"><i class="fas fa-user-tie"></i> Customers</div>
+            <div class="nav-item" onclick="switchTab('properties-tab', this)"><i class="fas fa-city"></i> Properties</div>
+            <div class="nav-item" onclick="switchTab('calculator-tab', this)"><i class="fas fa-calculator"></i> Calculator</div>
+            <div class="nav-item" onclick="switchTab('company-info-tab', this)"><i class="fas fa-building"></i> Company Info</div>
+            
+            <!-- Hidden/Conditional Tabs -->
+            <div class="nav-item" id="nav-whatsapp" onclick="switchTab('whatsapp-tab', this)"><i class="fab fa-whatsapp" style="color:#25D366; font-size:18px;"></i> WhatsApp Manager</div>
+            <div class="nav-item" id="nav-cert" onclick="switchTab('cert-tab', this)"><i class="fas fa-certificate"></i> Cert Generator</div>
+            <div class="nav-item" id="nav-idcard" onclick="switchTab('idcard-tab', this)"><i class="fas fa-id-badge"></i> ID Card Generator</div>
+            
+            <div class="nav-item" onclick="switchTab('profile-tab', this)"><i class="fas fa-user-edit"></i> My Profile</div>
+            <div class="nav-item" id="nav-admin" onclick="switchTab('admin-tab', this)"><i class="fas fa-user-shield"></i> Admin Panel</div>
+            
+            <div style="margin-top: auto; padding: 20px;">
+                <button class="btn-primary" style="width: 100%; background: #dc3545;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header" id="desktop-header">
+                <h1 id="page-title">Staff & Team Database</h1>
+                <div class="user-profile">
+                    <div style="display: flex; flex-direction: column; line-height: 1.2; text-align: right;">
+                        <span id="display-user-name">User Name</span>
+                        <span id="display-user-role" style="font-size: 12px; color: #a58349;">Role</span>
+                    </div>
+                    <img id="top-user-img" class="top-profile-pic" src="https://via.placeholder.com/45?text=User">
+                </div>
+            </div>
+
+            <!-- 1. STAFF & TEAM TAB -->
+            <div id="database-tab" class="content-section active">
+                <div class="controls" id="db-controls">
+                    <button class="btn-primary" onclick="document.getElementById('team-modal').style.display='flex'"><i class="fas fa-user-plus"></i> Add Team Member</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Name</th><th>Desig.</th><th>Mobile</th>
+                                <th class="hide-from-consultant">Govt ID No.</th><th class="hide-from-consultant">PAN No.</th><th class="hide-from-consultant">KYC</th>
+                                <th>Status</th>
+                                <th style="width:100px;">ID Card</th>
+                                <th class="hide-from-consultant" style="width:70px;">Cert</th>
+                                <th class="hide-from-consultant">Del</th>
+                            </tr>
+                        </thead>
+                        <tbody id="member-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. CUSTOMERS TAB -->
+            <div id="customer-tab" class="content-section">
+                <div class="controls">
+                    <button class="btn-primary" onclick="document.getElementById('customer-modal').style.display='flex'"><i class="fas fa-user-tie"></i> Add New Customer</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Cust ID</th><th>Customer Name</th><th>Category</th><th>Mobile</th><th>Requirement / Details</th><th>Added By</th><th>Del</th></tr></thead>
+                        <tbody id="customer-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. PROPERTIES TAB -->
+            <div id="properties-tab" class="content-section">
+                <div class="controls">
+                    <button class="btn-primary" onclick="document.getElementById('property-modal').style.display='flex'"><i class="fas fa-home"></i> Add Property</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Prop ID</th><th>Type</th><th>Location</th><th>Area/Size</th><th>Price/Demand</th><th>Party/Owner</th><th>Details</th><th>Listed By</th><th>Del</th></tr></thead>
+                        <tbody id="property-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. WHATSAPP MANAGER -->
+            <div id="whatsapp-tab" class="content-section">
+                <div class="admin-panel" style="border-top-color: #25D366;">
+                    <h2 style="color: #1a3c5a; margin-bottom: 5px;"><i class="fab fa-whatsapp" style="color:#25D366;"></i> WhatsApp Web Center</h2>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Manage groups and messages directly.</p>
+                    <div class="wa-card">
+                        <h3 style="margin-bottom: 10px; color: #1a3c5a;">Launch WhatsApp</h3>
+                        <a href="https://web.whatsapp.com/" target="_blank" class="wa-btn"><i class="fab fa-whatsapp"></i> Open WhatsApp Web</a>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                        <div class="wa-card" style="border-left-color: #bfa068; background: #fffdf5;">
+                            <h3 style="margin-bottom: 10px; color: #1a3c5a;">Quick Message</h3>
+                            <input type="text" id="wa-quick-num" placeholder="e.g. 919876543210" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;">
+                            <button class="btn-primary" onclick="openWaChat()"><i class="fas fa-paper-plane"></i> Start Chat</button>
+                        </div>
+                        <div class="wa-card" style="border-left-color: #1a3c5a; background: #f0f4f8;">
+                            <h3 style="margin-bottom: 10px; color: #1a3c5a;">Group Links Directory</h3>
+                            <textarea id="wa-group-links" rows="3" placeholder="Save Group Invite Links..." style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;"></textarea>
+                            <button class="btn-primary" style="background:#1a3c5a;" onclick="saveWaLinks()"><i class="fas fa-save"></i> Save Links</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. CALCULATOR TAB -->
+            <div id="calculator-tab" class="content-section">
+                <div class="admin-panel" style="border-top-color: #1a3c5a;">
+                    <h2 style="color: #1a3c5a; margin-bottom: 15px;"><i class="fas fa-calculator"></i> Advanced Real Estate Calculator</h2>
+                    <div class="calc-grid">
+                        <div class="calc-box">
+                            <h3 style="font-size:14px; color:#1a3c5a; border-bottom:2px solid #bfa068; padding-bottom:5px; margin-bottom:15px;">1. Property & Commission</h3>
+                            <div style="display:flex; gap:10px;">
+                                <div class="calc-input-group"><label>Area</label><input type="number" id="calc-area" oninput="calcProp()"></div>
+                                <div class="calc-input-group"><label>Rate (₹)</label><input type="number" id="calc-rate" oninput="calcProp()"></div>
+                            </div>
+                            <div style="text-align:center; margin:5px 0; color:#888; font-size:12px; font-weight:bold;">OR</div>
+                            <div class="calc-input-group"><label>Total Property Value (₹)</label><input type="number" id="calc-total-val" oninput="calcPropLump()"></div>
+                            <div style="display:flex; gap:10px;">
+                                <div class="calc-input-group"><label>Comm. (%)</label><input type="number" id="calc-comm" value="2" oninput="calcPropLump()"></div>
+                                <div class="calc-input-group"><label>Partners</label><input type="number" id="calc-part" value="1" oninput="calcPropLump()"></div>
+                            </div>
+                            <div class="calc-result-box">
+                                <div class="calc-result-item"><p>Total Value</p><h3 id="res-val">₹ 0</h3></div>
+                                <div class="calc-result-item"><p>Commission</p><h3 id="res-comm" style="color:#25D366;">₹ 0</h3></div>
+                                <div class="calc-result-item" style="border:none;"><p>Partner Share</p><h3 id="res-share">₹ 0</h3></div>
+                            </div>
+                        </div>
+                        <div class="calc-box">
+                            <h3 style="font-size:14px; color:#1a3c5a; border-bottom:2px solid #bfa068; padding-bottom:5px; margin-bottom:15px;">2. Rental ROI</h3>
+                            <div class="calc-input-group"><label>Total Investment (₹)</label><input type="number" id="calc-inv" oninput="calcRent()"></div>
+                            <div class="calc-input-group"><label>Monthly Rent (₹)</label><input type="number" id="calc-rent" oninput="calcRent()"></div>
+                            <div class="calc-input-group"><label>Annual Expenses (₹)</label><input type="number" id="calc-exp" value="0" oninput="calcRent()"></div>
+                            <div class="calc-result-box" style="background:#0d1e2d; margin-top:33px;">
+                                <div class="calc-result-item"><p>Annual Rent</p><h3 id="res-annual-rent">₹ 0</h3></div>
+                                <div class="calc-result-item"><p>Gross Yield</p><h3 id="res-gross-yield" style="color:#25D366;">0 %</h3></div>
+                                <div class="calc-result-item" style="border:none;"><p>Net Yield</p><h3 id="res-net-yield">0 %</h3></div>
+                            </div>
+                        </div>
+                        <div class="calc-box">
+                            <h3 style="font-size:14px; color:#1a3c5a; border-bottom:2px solid #bfa068; padding-bottom:5px; margin-bottom:15px;">3. Home Loan EMI</h3>
+                            <div class="calc-input-group"><label>Loan Amount (₹)</label><input type="number" id="calc-loan" oninput="calcEMI()"></div>
+                            <div class="calc-input-group"><label>Interest Rate (%)</label><input type="number" id="calc-int" value="8.5" step="0.1" oninput="calcEMI()"></div>
+                            <div class="calc-input-group"><label>Tenure (Years)</label><input type="number" id="calc-tenure" value="20" oninput="calcEMI()"></div>
+                            <div class="calc-result-box" style="background:#2c3e50; margin-top:33px;">
+                                <div class="calc-result-item"><p>Monthly EMI</p><h3 id="res-emi">₹ 0</h3></div>
+                                <div class="calc-result-item"><p>Total Interest</p><h3 id="res-tot-int" style="color:#e74c3c;">₹ 0</h3></div>
+                                <div class="calc-result-item" style="border:none;"><p>Total Payment</p><h3 id="res-tot-pay">₹ 0</h3></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. COMPANY INFO TAB -->
+            <div id="company-info-tab" class="content-section">
+                <div class="address-box">
+                    <h3><i class="fas fa-map-marker-alt"></i> NS Property Dealer Head Office</h3>
+                    <p id="display-company-address">New Colony, Shajapur, Madhya Pradesh</p>
+                </div>
+                <div class="contact-card-grid">
+                    <a id="link-whatsapp" href="#" target="_blank" class="contact-card whatsapp"><i class="fab fa-whatsapp"></i><div class="contact-details"><h3>WhatsApp</h3><p id="display-whatsapp">+91 000</p></div></a>
+                    <a id="link-phone" href="#" class="contact-card phone"><i class="fas fa-phone-alt"></i><div class="contact-details"><h3>Call Support</h3><p id="display-phone">+91 000</p></div></a>
+                    <a id="link-facebook" href="#" target="_blank" class="contact-card facebook"><i class="fab fa-facebook"></i><div class="contact-details"><h3>Facebook Page</h3><p>Like Our Page</p></div></a>
+                    <a id="link-youtube" href="#" target="_blank" class="contact-card youtube"><i class="fab fa-youtube"></i><div class="contact-details"><h3>YouTube Channel</h3><p>Watch Videos</p></div></a>
+                    <a id="link-instagram" href="#" target="_blank" class="contact-card instagram"><i class="fab fa-instagram"></i><div class="contact-details"><h3>Instagram</h3><p>Follow Updates</p></div></a>
+                    <a id="link-maps" href="#" target="_blank" class="contact-card maps"><i class="fas fa-map-marked-alt"></i><div class="contact-details"><h3>Google Maps</h3><p>Location</p></div></a>
+                </div>
+                
+                <div class="admin-panel" id="contact-edit-panel" style="display:none; border-top-color: #1a3c5a;">
+                    <h2 style="color: #1a3c5a; margin-bottom: 15px;"><i class="fas fa-edit"></i> Edit Company Info (Admin)</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group"><label>WhatsApp Number</label><input type="text" id="edit-whatsapp"></div>
+                        <div class="form-group"><label>Direct Phone</label><input type="text" id="edit-phone"></div>
+                        <div class="form-group"><label>Facebook Link</label><input type="text" id="edit-facebook"></div>
+                        <div class="form-group"><label>YouTube Link</label><input type="text" id="edit-youtube"></div>
+                        <div class="form-group"><label>Instagram Link</label><input type="text" id="edit-instagram"></div>
+                        <div class="form-group"><label>Google Maps Link</label><input type="text" id="edit-maps"></div>
+                        <div class="form-group" style="grid-column: 1 / -1;"><label>Full Office Address</label><textarea id="edit-address" rows="2"></textarea></div>
+                    </div>
+                    <button class="btn-primary" onclick="saveCompanyInfo()"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </div>
+
+            <!-- 7. PROFILE TAB -->
+            <div id="profile-tab" class="content-section">
+                <div class="admin-panel" style="border-top-color: #a58349;">
+                    <h2><i class="fas fa-id-badge"></i> My Profile Setup</h2>
+                    <div class="profile-setup-box">
+                        <img id="my-profile-preview" src="https://via.placeholder.com/120?text=Upload">
+                        <br><input type="file" id="upload-my-pic" accept="image/*" style="display:none;" onchange="saveMyProfilePic(event)">
+                        <button class="btn-primary" onclick="document.getElementById('upload-my-pic').click()">Change Photo</button>
+                    </div>
+                    <p style="font-size:14px; margin-bottom:5px;"><b>Name:</b> <span id="my-profile-name"></span></p>
+                    <p style="font-size:14px; margin-bottom:5px;"><b>Login ID:</b> <span id="my-profile-email"></span></p>
+                    <p style="font-size:14px; margin-bottom:5px;"><b>Role:</b> <span id="my-profile-role"></span></p>
+                </div>
+            </div>
+
+            <!-- 8. ADMIN PANEL TAB -->
+            <div id="admin-tab" class="content-section">
+                <div class="admin-panel" style="border-top-color: #28a745;">
+                    <h2 style="color: #1a3c5a; margin-bottom: 5px;"><i class="fas fa-cogs"></i> Login Screen Logo/Photo</h2>
+                    <input type="file" accept="image/*" onchange="saveCEOPhoto(event)" style="margin-top:10px;">
+                </div>
+                
+                <div class="admin-panel" style="border-top-color: #d4af37;">
+                    <h2><i class="fas fa-clock"></i> Pending Approvals</h2>
+                    <div class="table-container" style="padding:0; box-shadow:none;">
+                        <table>
+                            <thead><tr><th>Name</th><th>Email/ID</th><th>Role</th><th>Action</th></tr></thead>
+                            <tbody id="pending-users-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="admin-panel">
+                    <h2><i class="fas fa-users-cog"></i> Master User Management</h2>
+                    <div class="create-user-form">
+                        <div class="form-group"><label>Name</label><input type="text" id="new-user-name" placeholder="e.g. Ravi"></div>
+                        <div class="form-group"><label>Login ID (Email or Emp ID)</label><input type="text" id="new-user-email" placeholder="e.g. NSPD005"></div>
+                        <div class="form-group"><label>Password</label><input type="text" id="new-user-pass"></div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select id="new-user-role">
+                                <option value="Property Consultant">Property Consultant</option>
+                                <option value="Team Leader">Team Leader</option>
+                                <option value="Asst. Manager">Asst. Manager</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Managing Director">Managing Director</option>
+                                <option value="CEO">CEO</option>
+                                <option value="Founder">Founder</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="createNewUser()">Create Login</button>
+                    </div>
+                    <div class="table-container" style="padding:0; box-shadow:none; margin-top:20px;">
+                        <table>
+                            <thead><tr><th>Name</th><th>Login ID</th><th>Password</th><th>Role</th><th>Del</th></tr></thead>
+                            <tbody id="registered-users-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9. CERTIFICATE GENERATOR -->
+            <div id="cert-tab" class="content-section">
+                <button class="btn-primary" onclick="window.print()" style="margin-bottom:20px;"><i class="fas fa-print"></i> Print Certificate</button>
+                <div class="cert-stage">
+                    <div class="cert-wrap"><div class="cert">
+                        <div class="border-outer"></div><div class="border-inner"></div>
+                        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+                        <div class="cert-content">
+                            <img class="cert-logo" src="https://via.placeholder.com/150x80?text=LOGO" id="certLogo">
+                            <div class="cert-eyebrow" contenteditable="true">NS Property Dealer</div>
+                            <div class="cert-title" contenteditable="true">Certificate of Appointment</div>
+                            <div class="cert-rule"></div>
+                            <div class="cert-lead" contenteditable="true">This is to certify that</div>
+                            <div class="cert-name" id="cert-output-name" contenteditable="true">Employee Name</div>
+                            <div class="cert-name-rule"></div>
+                            <div class="cert-body" contenteditable="true">has been appointed as a <span class="cert-role" id="cert-output-role">Property Consultant</span> at NS Property Dealer, and is authorized to represent the company in property consultation, client advisory and real estate transaction services.</div>
+                            <div class="cert-meta">
+                                <div><div class="lbl">Employee ID</div><div class="val" id="cert-output-id" contenteditable="true">NSPD001</div></div>
+                                <div><div class="lbl">Date of Joining</div><div class="val" id="cert-output-joining" contenteditable="true">01 Aug 2026</div></div>
+                                <div><div class="lbl">Certificate No.</div><div class="val" contenteditable="true">NS/CERT/001</div></div>
+                            </div>
+                            <div class="cert-footer">
+                                <div class="sign-block"><div class="sign-line"></div><div class="sign-label">Date of Issue</div><div class="sign-name" id="cert-output-issue-date" contenteditable="true">01 Aug 2026</div></div>
+                                <div class="seal"><img src="https://via.placeholder.com/80?text=SEAL" id="sealImg"></div>
+                                <div class="sign-block"><div class="sign-line"></div><div class="sign-label">Authorized Signatory</div><div class="sign-name" contenteditable="true">Director, NS Property Dealer</div></div>
+                            </div>
+                        </div>
+                    </div></div>
+                </div>
+                <input type="file" id="certFileInput" accept="image/*" style="display:none">
+            </div>
+
+            <!-- 10. ID CARD GENERATOR -->
+            <div id="idcard-tab" class="content-section">
+                <div class="controls">
+                    <button class="btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print ID Card</button>
+                    <p style="font-size:12px; color:#666;">If photo is missing, upload from Database tab first.</p>
+                </div>
+                <div style="display:flex; justify-content:center;">
+                    <div class="id-card" id="frontCard">
+                        <div>
+                            <div class="id-card-header"><h2>NS</h2><p>PROPERTY DEALER</p></div>
+                            <div class="id-logo-container"><img src="https://via.placeholder.com/120x120?text=LOGO"></div>
+                            <div class="id-photo-container"><img id="outputPhoto" src="https://via.placeholder.com/110"></div>
+                            <div class="id-card-body">
+                                <h3 id="outputName">SHOAIB KHAN</h3>
+                                <div class="designation-title" id="outputDesigTitle">PROPERTY CONSULTANT</div>
+                                <table class="id-details-table">
+                                    <tr><td class="label">EMPLOYEE ID</td><td>: <span id="outputEmpId">NSPD001</span></td></tr>
+                                    <tr><td class="label">POSITION</td><td>: <span id="outputDesig">PROPERTY CONSULTANT</span></td></tr>
+                                    <tr><td class="label">MOB NUMBER</td><td>: <span id="outputMobile">9179484852</span></td></tr>
+                                    <tr><td class="label">ISSUE DATE</td><td>: <span id="outputIssue">01 / 08 / 2026</span></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="id-card-footer-front"><div class="sign" id="outputSign">Shoaib</div><span>AUTHORISED SIGNATORY</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script>
+        // ================= 1. INITIALIZE DATABASES (V15 - Final Mobile Fix & Links Restoration) =================
+        if (!localStorage.getItem("nsSettingsV15")) {
+            localStorage.setItem("nsSettingsV15", JSON.stringify({ 
+                loginCeoImage: "https://via.placeholder.com/100?text=CEO",
+                whatsapp: "9179484852", phone: "+9179484852", youtube: "https://youtube.com",
+                instagram: "https://instagram.com", facebook: "https://facebook.com", maps: "https://maps.google.com",
+                waGroupLinks: "", address: "New Colony, Shajapur, Madhya Pradesh"
+            }));
+        }
+        let systemSettings = JSON.parse(localStorage.getItem("nsSettingsV15"));
+        document.getElementById('login-ceo-img').src = systemSettings.loginCeoImage; document.getElementById('wa-group-links').value = systemSettings.waGroupLinks || "";
+
+        if (!localStorage.getItem("nsUsersV15")) {
+            let defaultUsers = [
+                { name: "MD Shoaib", loginId: "nspropertydealershajapur@gmail.com", password: "shoaibkhan@12", role: "Admin", isApproved: true, profilePic: "" }
+            ];
+            localStorage.setItem("nsUsersV15", JSON.stringify(defaultUsers));
+        }
+        let usersDB = JSON.parse(localStorage.getItem("nsUsersV15"));
+
+        if (!localStorage.getItem("nsMembersV15")) {
+            let defaultMembers = [
+                { id: "NSPD001", name: "MD Shoaib", role: "Admin", mobile: "9179484852", status: "Active", certDone: false, idDone: false, addedBy: "nspropertydealershajapur@gmail.com", aadhaar: "", pan: "", kycAadhaarImg: "", kycPanImg: "", idPhoto: "" }
+            ];
+            localStorage.setItem("nsMembersV15", JSON.stringify(defaultMembers));
+        }
+        let membersDB = JSON.parse(localStorage.getItem("nsMembersV15"));
+
+        if (!localStorage.getItem("nsCustomersV15")) {
+            let defaultCust = [
+                { id: "CUST001", name: "Amit Singh", type: "Investor", mobile: "9876543210", details: "Looking for commercial plots", addedBy: "nspropertydealershajapur@gmail.com" }
+            ];
+            localStorage.setItem("nsCustomersV15", JSON.stringify(defaultCust));
+        }
+        let customersDB = JSON.parse(localStorage.getItem("nsCustomersV15"));
+
+        if (!localStorage.getItem("nsPropertiesV15")) {
+            let defaultProps = [
+                { id: "PROP001", type: "Plot", location: "Warsi Colony", area: "1500 SqFt", price: "2500000", party: "Ramesh (9876543210)", details: "East facing", addedBy: "nspropertydealershajapur@gmail.com" }
+            ];
+            localStorage.setItem("nsPropertiesV15", JSON.stringify(defaultProps));
+        }
+        let propertiesDB = JSON.parse(localStorage.getItem("nsPropertiesV15"));
+        
+        let currentUser = null;
+
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ================= 2. AUTHENTICATION & ROLE ACCESS (RBAC) =================
+        function showMsg(msg, color) { let msgEl = document.getElementById('auth-msg'); msgEl.innerText = msg; msgEl.style.color = color; msgEl.style.display = 'block'; }
+        
+        function processSignup() {
+            let name = document.getElementById("signup-name").value.trim(); let email = document.getElementById("signup-email").value.trim();
+            let pass = document.getElementById("signup-password").value.trim(); let phone = document.getElementById("signup-phone").value.trim();
+            if (!name || !email || !pass) return showMsg("Please fill details!", "#dc3545");
+            if (usersDB.find(u => u.loginId.toLowerCase() === email.toLowerCase())) return showMsg("ID already registered!", "#dc3545");
+            usersDB.push({ name, loginId: email, password: pass, phone, role: "Property Consultant", isApproved: false, profilePic: "" });
+            localStorage.setItem("nsUsersV15", JSON.stringify(usersDB)); showMsg("Request sent! Admin will approve.", "#28a745"); setTimeout(() => {document.getElementById('signup-box').style.display='none'; document.getElementById('login-box').style.display='block';}, 3000);
+        }
+
+        function processLogin() {
+            let loginId = document.getElementById("login-email").value.trim().toLowerCase(); 
+            let pass = document.getElementById("login-password").value.trim();
+            let userFound = usersDB.find(u => u.loginId.toLowerCase() === loginId && u.password === pass);
+
+            if (userFound) {
+                if (!userFound.isApproved) return showMsg("Account pending Admin approval.", "#dc3545");
+                
+                currentUser = userFound;
+                document.getElementById("display-user-name").innerText = currentUser.name; document.getElementById("display-user-role").innerText = currentUser.role;
+                if(currentUser.profilePic) document.getElementById("top-user-img").src = currentUser.profilePic;
+                document.getElementById("my-profile-name").innerText = currentUser.name; document.getElementById("my-profile-role").innerText = currentUser.role; document.getElementById("my-profile-email").innerText = currentUser.loginId;
+
+                // Role Logic setup
+                const isAdmin = ["Admin", "Founder", "CEO", "Managing Director"].includes(currentUser.role);
+                const isManager = ["Manager", "Asst. Manager", "Team Leader"].includes(currentUser.role);
+                const isConsultant = (currentUser.role === "Property Consultant");
+
+                let hideCols = document.querySelectorAll('.hide-from-consultant');
+                
+                if (isAdmin) {
+                    document.getElementById("nav-admin").style.display = "flex"; document.getElementById("nav-whatsapp").style.display = "flex"; 
+                    document.getElementById("nav-cert").style.display = "flex"; document.getElementById("nav-idcard").style.display = "flex"; 
+                    document.getElementById("db-controls").style.display = "flex"; document.getElementById("contact-edit-panel").style.display = "block";
+                    hideCols.forEach(el => el.style.display = "table-cell");
+                } else if (isManager) {
+                    document.getElementById("nav-admin").style.display = "none"; document.getElementById("nav-whatsapp").style.display = "none";
+                    document.getElementById("nav-cert").style.display = "flex"; document.getElementById("nav-idcard").style.display = "flex"; 
+                    document.getElementById("db-controls").style.display = "flex"; document.getElementById("contact-edit-panel").style.display = "none";
+                    hideCols.forEach(el => el.style.display = "table-cell");
+                } else if (isConsultant) {
+                    document.getElementById("nav-admin").style.display = "none"; document.getElementById("nav-whatsapp").style.display = "none";
+                    document.getElementById("nav-cert").style.display = "none"; document.getElementById("nav-idcard").style.display = "none"; 
+                    document.getElementById("db-controls").style.display = "flex"; // Consultant CAN add team now
+                    document.getElementById("contact-edit-panel").style.display = "none";
+                    hideCols.forEach(el => el.style.display = "none");
+                }
+
+                if(window.innerWidth > 768) document.getElementById("desktop-logo").style.display = "block";
+                else document.getElementById("desktop-header").style.display = "none";
+                
+                document.getElementById("login-overlay").style.opacity = "0";
+                setTimeout(() => { document.getElementById("login-overlay").style.display = "none"; document.getElementById("main-app").style.display = "flex"; loadAdminPanel(); renderMembersTable(); renderCustomerTable(); renderPropertyTable(); loadCompanyInfo(); }, 500);
+            } else { showMsg("Invalid ID or Password!", "#dc3545"); }
+        }
+
+        function logout() {
+            currentUser = null; document.getElementById("login-email").value = ""; document.getElementById("login-password").value = "";
+            switchTab('database-tab', document.querySelector('.nav-item')); document.getElementById("main-app").style.display = "none"; document.getElementById("login-overlay").style.display = "flex"; setTimeout(() => { document.getElementById("login-overlay").style.opacity = "1"; }, 50);
+        }
+
+        // ================= 3. TEAM BUILDING (Consultants adding Consultants) =================
+        function saveTeamMember() {
+            let name = document.getElementById("tm-name").value.trim(); let mobile = document.getElementById("tm-mobile").value.trim();
+            let email = document.getElementById("tm-email").value.trim(); let pass = document.getElementById("tm-pass").value.trim();
+
+            if(!name || !mobile || !pass) return alert("Name, Mobile, and Password are required!");
+            
+            let nextId = "NSPD" + (membersDB.length + 1).toString().padStart(3, '0');
+            let loginId = email ? email : nextId; 
+
+            if (usersDB.find(u => u.loginId.toLowerCase() === loginId.toLowerCase())) return alert("This Email/ID is already in use!");
+
+            usersDB.push({ name: name, loginId: loginId, password: pass, role: "Property Consultant", isApproved: false, profilePic: "" });
+            localStorage.setItem("nsUsersV15", JSON.stringify(usersDB));
+            membersDB.push({ id: nextId, name: name, role: "Property Consultant", mobile: mobile, status: "Pending", certDone: false, idDone: false, addedBy: currentUser.loginId, aadhaar: "", pan: "", kycAadhaarImg: "", kycPanImg: "", idPhoto: "" });
+            localStorage.setItem("nsMembersV15", JSON.stringify(membersDB));
+
+            alert(`Consultant Added Successfully!\nLogin ID: ${loginId}\nStatus: PENDING ADMIN APPROVAL\nID Card can be generated after approval.`);
+            document.getElementById('team-modal').style.display='none';
+            document.getElementById("tm-name").value = ""; document.getElementById("tm-mobile").value = ""; document.getElementById("tm-email").value = ""; document.getElementById("tm-pass").value = "";
+            renderMembersTable(); loadAdminPanel();
+        }
+
+        // ================= 4. STAFF DB & TABLE RENDER LOGIC =================
+        function renderMembersTable() {
+            let tbody = document.getElementById("member-table-body"); tbody.innerHTML = "";
+            const isAdmin = ["Admin", "Founder", "CEO", "Managing Director"].includes(currentUser.role);
+            const isManager = ["Manager", "Asst. Manager", "Team Leader"].includes(currentUser.role);
+            
+            membersDB.forEach((member, idx) => {
+                if (!isAdmin) { if (member.addedBy !== currentUser.loginId && member.id !== currentUser.loginId) return; }
+
+                let isPending = member.status === "Pending";
+                let certBtn = "", idBtn = "";
+                
+                if(!isPending) {
+                    certBtn = member.certDone ? `<span class="doc-badge doc-done" onclick="generateDoc(${idx}, 'cert')">Cert ✅</span>` : `<span class="doc-badge doc-active" onclick="generateDoc(${idx}, 'cert')">Cert ❌</span>`;
+                    idBtn = member.idDone ? `<span class="doc-badge doc-done" onclick="generateDoc(${idx}, 'id')">ID ✅</span>` : `<span class="doc-badge doc-active" onclick="generateDoc(${idx}, 'id')">ID ❌</span>`;
+                } else {
+                    certBtn = `<span class="doc-badge doc-pending">Cert ❌</span>`; idBtn = `<span class="doc-badge doc-pending">ID ❌</span>`;
+                }
+
+                let editable = (isAdmin || isManager) ? 'contenteditable="true"' : '';
+                let statusClass = member.status === 'Active' ? 'status-active' : (member.status === 'Pending' ? 'status-pending' : 'status-inactive');
+                
+                let rowHtml = `<tr>
+                    <td ${editable} onblur="updateMember(${idx}, 'id', this.innerText)">${member.id}</td>
+                    <td ${editable} onblur="updateMember(${idx}, 'name', this.innerText)">${member.name}</td>
+                    <td ${editable} onblur="updateMember(${idx}, 'role', this.innerText)">${member.role}</td>
+                    <td ${editable} onblur="updateMember(${idx}, 'mobile', this.innerText)">${member.mobile}</td>`;
+                
+                if (isAdmin || isManager) {
+                    rowHtml += `<td class="hide-from-consultant"><input type="text" value="${member.aadhaar || ''}" placeholder="Govt ID" onblur="updateMember(${idx}, 'aadhaar', this.value)" style="width:90px; border:none; background:transparent; font-size:12px;"></td>
+                    <td class="hide-from-consultant"><input type="text" value="${member.pan || ''}" placeholder="PAN" onblur="updateMember(${idx}, 'pan', this.value)" style="width:80px; border:none; background:transparent; font-size:12px; text-transform:uppercase;"></td>
+                    <td class="hide-from-consultant"><button class="btn-primary" style="font-size:10px; padding:4px 8px;" onclick="openKYCModal(${idx})"><i class="fas fa-upload"></i></button></td>
+                    <td><span class="status-badge ${statusClass}" onclick="toggleStatus(${idx})">${member.status}</span></td>
+                    <td>${idBtn}</td><td class="hide-from-consultant">${certBtn}</td><td class="actions hide-from-consultant" style="text-align:center;"><i class="fas fa-trash" onclick="deleteMember(${idx})"></i></td>`;
+                } else {
+                    rowHtml += `<td><span class="status-badge ${statusClass}">${member.status}</span></td><td>${idBtn}</td>`;
+                }
+                rowHtml += `</tr>`; tbody.innerHTML += rowHtml;
+            });
+        }
+        function updateMember(idx, field, value) { membersDB[idx][field] = value.trim(); localStorage.setItem("nsMembersV15", JSON.stringify(membersDB)); }
+        function toggleStatus(idx) { 
+            if(membersDB[idx].status === 'Pending') return alert("Pending accounts must be approved from Admin Panel first!");
+            membersDB[idx].status = membersDB[idx].status === 'Active' ? 'Inactive' : 'Active'; localStorage.setItem("nsMembersV15", JSON.stringify(membersDB)); renderMembersTable(); 
+        }
+        function deleteMember(idx) { if(confirm("Delete entry?")) { membersDB.splice(idx, 1); localStorage.setItem("nsMembersV15", JSON.stringify(membersDB)); renderMembersTable(); } }
+
+        // ================= 5. CUSTOMER CRM LOGIC =================
+        function saveCustomer() {
+            let name = document.getElementById("cust-name").value.trim(); let mobile = document.getElementById("cust-mobile").value.trim();
+            let type = document.getElementById("cust-type").value; let details = document.getElementById("cust-details").value.trim();
+            if(!name || !mobile) return alert("Customer Name and Mobile required!");
+            let custId = "CUST" + (customersDB.length + 1).toString().padStart(3, '0');
+            customersDB.push({ id: custId, name: name, type: type, mobile: mobile, details: details, addedBy: currentUser.loginId });
+            localStorage.setItem("nsCustomersV15", JSON.stringify(customersDB));
+            document.getElementById('customer-modal').style.display='none'; document.getElementById("cust-name").value = ""; document.getElementById("cust-mobile").value = ""; document.getElementById("cust-details").value = "";
+            renderCustomerTable();
+        }
+        function renderCustomerTable() {
+            let tbody = document.getElementById("customer-table-body"); tbody.innerHTML = "";
+            const isAdmin = ["Admin", "Founder", "CEO", "Managing Director"].includes(currentUser.role);
+            customersDB.forEach((cust, idx) => {
+                if (!isAdmin && cust.addedBy !== currentUser.loginId) return;
+                let bClass = "badge"; if(cust.type === "Investor") bClass += " investor"; if(cust.type === "Rental") bClass += " rental"; if(cust.type === "Buy/Sell") bClass += " buysell";
+                tbody.innerHTML += `<tr><td>${cust.id}</td><td contenteditable="true" onblur="updateCustomer(${idx}, 'name', this.innerText)">${cust.name}</td><td><span class="${bClass}">${cust.type}</span></td><td contenteditable="true" onblur="updateCustomer(${idx}, 'mobile', this.innerText)">${cust.mobile}</td><td contenteditable="true" onblur="updateCustomer(${idx}, 'details', this.innerText)">${cust.details}</td><td><span style="font-size:11px; color:#888;">${cust.addedBy}</span></td><td class="actions" style="text-align:center;"><i class="fas fa-trash" onclick="deleteCustomer(${idx})"></i></td></tr>`;
+            });
+        }
+        function updateCustomer(idx, field, value) { customersDB[idx][field] = value.trim(); localStorage.setItem("nsCustomersV15", JSON.stringify(customersDB)); }
+        function deleteCustomer(idx) { if(confirm("Delete Customer?")) { customersDB.splice(idx, 1); localStorage.setItem("nsCustomersV15", JSON.stringify(customersDB)); renderCustomerTable(); } }
+
+        // ================= 6. PROPERTY INVENTORY LOGIC =================
+        function saveProperty() {
+            let type = document.getElementById("prop-type").value; let loc = document.getElementById("prop-location").value.trim();
+            let area = document.getElementById("prop-area").value.trim(); let price = document.getElementById("prop-price").value.trim();
+            let party = document.getElementById("prop-party").value.trim(); let details = document.getElementById("prop-details").value.trim();
+            if(!loc || !price) return alert("Location and Price are required!");
+            let pId = "PROP" + (propertiesDB.length + 1).toString().padStart(3, '0');
+            propertiesDB.push({ id: pId, type, location: loc, area, price, party, details, addedBy: currentUser.loginId });
+            localStorage.setItem("nsPropertiesV15", JSON.stringify(propertiesDB));
+            document.getElementById('property-modal').style.display='none'; document.getElementById("prop-location").value = ""; document.getElementById("prop-price").value = ""; document.getElementById("prop-party").value = ""; document.getElementById("prop-details").value = "";
+            renderPropertyTable();
+        }
+        function renderPropertyTable() {
+            let tbody = document.getElementById("property-table-body"); tbody.innerHTML = "";
+            propertiesDB.forEach((prop, idx) => {
+                let bClass = "badge"; 
+                if(prop.type.includes("Land")) bClass += " prop-land"; else if(prop.type.includes("Plot")) bClass += " prop-plot"; else if(prop.type.includes("Company")) bClass += " prop-company"; else bClass += " buysell";
+                let editable = (["Admin", "Founder", "CEO", "Managing Director"].includes(currentUser.role) || prop.addedBy === currentUser.loginId) ? 'contenteditable="true"' : '';
+                tbody.innerHTML += `<tr><td>${prop.id}</td><td><span class="${bClass}">${prop.type}</span></td><td ${editable} onblur="updateProperty(${idx}, 'location', this.innerText)">${prop.location}</td><td ${editable} onblur="updateProperty(${idx}, 'area', this.innerText)">${prop.area}</td><td ${editable} onblur="updateProperty(${idx}, 'price', this.innerText)">${prop.price}</td><td ${editable} onblur="updateProperty(${idx}, 'party', this.innerText)">${prop.party}</td><td ${editable} onblur="updateProperty(${idx}, 'details', this.innerText)">${prop.details}</td><td><span style="font-size:11px; color:#888;">${prop.addedBy}</span></td><td class="actions" style="text-align:center;"><i class="fas fa-trash" onclick="deleteProperty(${idx})"></i></td></tr>`;
+            });
+        }
+        function updateProperty(idx, field, value) { propertiesDB[idx][field] = value.trim(); localStorage.setItem("nsPropertiesV15", JSON.stringify(propertiesDB)); }
+        function deleteProperty(idx) { 
+            const isAdmin = ["Admin", "Founder", "CEO", "Managing Director"].includes(currentUser.role);
+            if(!isAdmin && propertiesDB[idx].addedBy !== currentUser.loginId) return alert("You can only delete properties added by you!");
+            if(confirm("Delete Property?")) { propertiesDB.splice(idx, 1); localStorage.setItem("nsPropertiesV15", JSON.stringify(propertiesDB)); renderPropertyTable(); } 
+        }
+
+        // ================= 7. ADMIN PANEL & APPROVALS =================
+        function loadAdminPanel() {
+            let pendingBody = document.getElementById("pending-users-body"); let activeBody = document.getElementById("registered-users-body");
+            pendingBody.innerHTML = ""; activeBody.innerHTML = "";
+            usersDB.forEach((user, idx) => {
+                if (!user.isApproved) {
+                    pendingBody.innerHTML += `<tr><td>${user.name}</td><td>${user.loginId}</td><td>${user.role}</td><td><button class="btn-success" onclick="approveUser(${idx})">Approve</button></td></tr>`;
+                } else {
+                    activeBody.innerHTML += `<tr><td>${user.name}</td><td><b>${user.loginId}</b></td><td>${user.password}</td><td><span class="badge" style="background:#1a3c5a; color:white;">${user.role}</span></td><td><i class="fas fa-trash" style="cursor:pointer; color:#dc3545;" onclick="deleteUser(${idx})"></i></td></tr>`;
+                }
+            });
+        }
+        function approveUser(idx) { 
+            usersDB[idx].isApproved = true; localStorage.setItem("nsUsersV15", JSON.stringify(usersDB)); 
+            let member = membersDB.find(m => m.id === usersDB[idx].loginId || m.name === usersDB[idx].name);
+            if(member) { member.status = "Active"; localStorage.setItem("nsMembersV15", JSON.stringify(membersDB)); renderMembersTable(); }
+            loadAdminPanel(); alert("Account Approved & Activated!"); 
+        }
+        function deleteUser(idx) { if(confirm("Delete Login User?")) { usersDB.splice(idx, 1); localStorage.setItem("nsUsersV15", JSON.stringify(usersDB)); loadAdminPanel(); } }
+        function createNewUser() {
+            let name = document.getElementById("new-user-name").value.trim(); let loginId = document.getElementById("new-user-email").value.trim();
+            let pass = document.getElementById("new-user-pass").value.trim(); let role = document.getElementById("new-user-role").value;
+            if (!name || !loginId || !pass) return alert("Fill all details!");
+            usersDB.push({ name, loginId, password: pass, role, isApproved: true, profilePic: "" });
+            localStorage.setItem("nsUsersV15", JSON.stringify(usersDB)); alert("Created!"); loadAdminPanel();
+        }
+
+        // ================= 8. KYC MODAL & FILES =================
+        function openKYCModal(idx) {
+            document.getElementById('kyc-member-index').value = idx; let member = membersDB[idx];
+            let aPreview = document.getElementById('kyc-aadhaar-preview'); let pPreview = document.getElementById('kyc-pan-preview');
+            if(member.kycAadhaarImg) { aPreview.src = member.kycAadhaarImg; aPreview.style.display = 'block'; } else { aPreview.style.display = 'none'; }
+            if(member.kycPanImg) { pPreview.src = member.kycPanImg; pPreview.style.display = 'block'; } else { pPreview.style.display = 'none'; }
+            document.getElementById('kyc-modal').style.display = 'flex';
+        }
+        function closeKYCModal() { document.getElementById('kyc-modal').style.display = 'none'; }
+        function previewKYC(event, previewId) { let reader = new FileReader(); reader.onload = function(){ document.getElementById(previewId).src = reader.result; document.getElementById(previewId).style.display = 'block'; }; if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]); }
+        function saveKYC() {
+            let idx = document.getElementById('kyc-member-index').value; let aPreview = document.getElementById('kyc-aadhaar-preview'); let pPreview = document.getElementById('kyc-pan-preview');
+            if(aPreview.style.display === 'block') membersDB[idx].kycAadhaarImg = aPreview.src; if(pPreview.style.display === 'block') membersDB[idx].kycPanImg = pPreview.src;
+            localStorage.setItem("nsMembersV15", JSON.stringify(membersDB)); alert("KYC Files Saved!"); closeKYCModal();
+        }
+
+        // ================= 9. COMPANY INFO & CALC =================
+        function loadCompanyInfo() {
+            document.getElementById('display-whatsapp').innerText = "+" + systemSettings.whatsapp; document.getElementById('link-whatsapp').href = "https://wa.me/" + systemSettings.whatsapp;
+            document.getElementById('display-phone').innerText = systemSettings.phone; document.getElementById('link-phone').href = "tel:" + systemSettings.phone;
+            document.getElementById('link-facebook').href = systemSettings.facebook; document.getElementById('link-youtube').href = systemSettings.youtube;
+            document.getElementById('link-instagram').href = systemSettings.instagram; document.getElementById('link-maps').href = systemSettings.maps;
+            document.getElementById('display-company-address').innerText = systemSettings.address;
+            
+            document.getElementById('edit-whatsapp').value = systemSettings.whatsapp; document.getElementById('edit-phone').value = systemSettings.phone;
+            document.getElementById('edit-facebook').value = systemSettings.facebook; document.getElementById('edit-youtube').value = systemSettings.youtube;
+            document.getElementById('edit-instagram').value = systemSettings.instagram; document.getElementById('edit-maps').value = systemSettings.maps;
+            document.getElementById('edit-address').value = systemSettings.address;
+        }
+        function saveCompanyInfo() {
+            systemSettings.whatsapp = document.getElementById('edit-whatsapp').value; systemSettings.phone = document.getElementById('edit-phone').value;
+            systemSettings.facebook = document.getElementById('edit-facebook').value; systemSettings.youtube = document.getElementById('edit-youtube').value;
+            systemSettings.instagram = document.getElementById('edit-instagram').value; systemSettings.maps = document.getElementById('edit-maps').value;
+            systemSettings.address = document.getElementById('edit-address').value;
+            localStorage.setItem("nsSettingsV15", JSON.stringify(systemSettings)); loadCompanyInfo(); alert("Company Info Updated!");
+        }
+        function openWaChat() { window.open("https://wa.me/" + document.getElementById('wa-quick-num').value.trim(), "_blank"); }
+        function saveWaLinks() { systemSettings.waGroupLinks = document.getElementById('wa-group-links').value; localStorage.setItem("nsSettingsV15", JSON.stringify(systemSettings)); alert("Links Saved!"); }
+
+        function formatMoney(num) { if(isNaN(num) || !isFinite(num)) return "₹ 0"; return "₹ " + num.toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+        function calcProp() { let a = parseFloat(document.getElementById('calc-area').value) || 0; let r = parseFloat(document.getElementById('calc-rate').value) || 0; document.getElementById('calc-total-val').value = a * r; calcPropLump(); }
+        function calcPropLump() { let v = parseFloat(document.getElementById('calc-total-val').value) || 0; let c = parseFloat(document.getElementById('calc-comm').value) || 0; let p = parseInt(document.getElementById('calc-part').value) || 1; let commAmt = (v * c) / 100; document.getElementById('res-val').innerText = formatMoney(v); document.getElementById('res-comm').innerText = formatMoney(commAmt); document.getElementById('res-share').innerText = formatMoney(commAmt / p); }
+        function calcRent() { let inv = parseFloat(document.getElementById('calc-inv').value) || 0; let rent = parseFloat(document.getElementById('calc-rent').value) || 0; let exp = parseFloat(document.getElementById('calc-exp').value) || 0; let aRent = rent * 12; let netRent = aRent - exp; let grossY = inv > 0 ? (aRent / inv) * 100 : 0; let netY = inv > 0 ? (netRent / inv) * 100 : 0; document.getElementById('res-annual-rent').innerText = formatMoney(aRent); document.getElementById('res-gross-yield').innerText = grossY.toFixed(2) + " %"; document.getElementById('res-net-yield').innerText = netY.toFixed(2) + " %"; }
+        function calcEMI() { let p = parseFloat(document.getElementById('calc-loan').value) || 0; let r = parseFloat(document.getElementById('calc-int').value) || 0; let n = parseFloat(document.getElementById('calc-tenure').value) || 0; let rMon = r / 12 / 100; let nMon = n * 12; let emi = 0; if(rMon > 0 && nMon > 0) { emi = p * rMon * (Math.pow(1 + rMon, nMon)) / (Math.pow(1 + rMon, nMon) - 1); } else if (nMon > 0) { emi = p / nMon; } let totPay = emi * nMon; let totInt = totPay - p; document.getElementById('res-emi').innerText = formatMoney(emi); document.getElementById('res-tot-int').innerText = formatMoney(totInt); document.getElementById('res-tot-pay').innerText = formatMoney(totPay); }
+
+        // ================= 10. DOCS GEN & UI =================
+        function generateDoc(idx, type) {
+            let member = membersDB[idx]; let today = new Date().toLocaleDateString('en-GB');
+            if(member.status === "Pending") return alert("Cannot generate docs for Pending accounts! Admin must approve first.");
+
+            if (type === 'id') {
+                member.idDone = true; document.getElementById('outputName').innerText = member.name; document.getElementById('outputEmpId').innerText = member.id;
+                document.getElementById('outputDesigTitle').innerText = member.role; 
+                if(member.idPhoto) document.getElementById('outputPhoto').src = member.idPhoto; else document.getElementById('outputPhoto').src = "https://via.placeholder.com/110";
+                
+                document.getElementById('nav-idcard').style.display = 'flex';
+                switchTab('idcard-tab', document.getElementById('nav-idcard')); 
+            } else if (type === 'cert') {
+                if(currentUser.role === "Property Consultant") return alert("Consultants are not authorized to generate certificates.");
+                member.certDone = true; document.getElementById('cert-output-name').innerText = member.name; document.getElementById('cert-output-role').innerText = member.role;
+                document.getElementById('cert-output-id').innerText = member.id; document.getElementById('cert-output-issue-date').innerText = today;
+                switchTab('cert-tab', document.getElementById('nav-cert')); 
+            }
+            localStorage.setItem("nsMembersV15", JSON.stringify(membersDB)); renderMembersTable(); 
+        }
+
+        function saveMyProfilePic(event) {
+            let reader = new FileReader();
+            reader.onload = function(){
+                currentUser.profilePic = reader.result; document.getElementById("top-user-img").src = reader.result; document.getElementById("my-profile-preview").src = reader.result;
+                let userIndex = usersDB.findIndex(u => u.loginId === currentUser.loginId); if(userIndex !== -1) { usersDB[userIndex].profilePic = reader.result; localStorage.setItem("nsUsersV15", JSON.stringify(usersDB)); }
+                let mIdx = membersDB.findIndex(m => m.id === currentUser.loginId || m.name === currentUser.name);
+                if(mIdx !== -1) { membersDB[mIdx].idPhoto = reader.result; localStorage.setItem("nsMembersV15", JSON.stringify(membersDB));}
+            };
+            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.content-section').forEach(tab => tab.classList.remove('active')); document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active')); if(element) { element.classList.add('active'); document.getElementById('page-title').innerText = element.innerText; }
+            if(window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('open'); }
+        }
+        
+        let certActiveTarget = null; const certFileInput = document.getElementById('certFileInput');
+        function bindCertUpload(el){ el.addEventListener('click', () => { certActiveTarget = el; certFileInput.click(); }); } bindCertUpload(document.getElementById('certLogo')); bindCertUpload(document.getElementById('sealImg'));
+        certFileInput.addEventListener('change', (e) => { const file = e.target.files[0]; if(!file || !certActiveTarget) return; const reader = new FileReader(); reader.onload = (ev) => { certActiveTarget.src = ev.target.result; }; reader.readAsDataURL(file); certFileInput.value = ''; });
+        function saveCEOPhoto(event) { let reader = new FileReader(); reader.onload = function(){ systemSettings.loginCeoImage = reader.result; localStorage.setItem("nsSettingsV15", JSON.stringify(systemSettings)); document.getElementById('login-ceo-img').src = reader.result; document.getElementById('signup-ceo-img').src = reader.result; alert("Login Photo Updated!"); }; if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]); }
+    </script>
+</body>
+</html>
